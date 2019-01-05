@@ -53,17 +53,43 @@ public:
         }
     }
 
-    static double EMA(double *price, int len, int currentBar) {
-        double sFactor = 2 / double(len + 1);
-        double XAvgValue = 0;
-
-        if (currentBar == 0) {
-            XAvgValue = price[currentBar];
-        } else {
-            double preXAvgValue = EMA(price, len, currentBar - 1);
-            XAvgValue = preXAvgValue + sFactor * (price[currentBar] - preXAvgValue);
-        }
-        return XAvgValue;
+inline double EMA(double *price, int len, int currentBar) {
+    if (currentBar < 0) {
+        return price[0];
     }
+    double sFactor = 2 / double(len + 1);
+    double XAvgValue = 0;
+
+    if (currentBar == 0) {
+        XAvgValue = price[currentBar];
+    } else {
+        double preXAvgValue = EMA(price, len, currentBar - 1);
+        XAvgValue = preXAvgValue + sFactor * (price[currentBar] - preXAvgValue);
+    }
+    return XAvgValue;
+}
+
+inline double MACD(double *price, int m, int s, int l, int currentBar) {
+    if (currentBar < 0) {
+        return price[0];
+    }
+
+    double diffarray[currentBar + 1];
+    for (int i = currentBar; i >= 0; --i) {
+        double shortEma = EMA(price, s, currentBar - i);
+        double longEma = EMA(price, l, currentBar - i);
+        double diff = shortEma - longEma;
+        diffarray[currentBar - i] = diff;
+    }
+    double dea = EMA(diffarray, m, currentBar);
+    double shortEma = EMA(price, s, currentBar);
+    double longEma = EMA(price, l, currentBar);
+    double diff = shortEma - longEma;
+    double macd = diff - dea;
+    std::cout << "index" << currentBar << " shortEma" << shortEma << " longEMa" << longEma << " diff" << diff << " dea"
+              << dea << " macd:" << macd
+              << std::endl;
+    return macd;
+}
 };
 
